@@ -485,6 +485,7 @@ getpwnamallow(struct ssh *ssh, const char *user)
 	aix_setauthdb(user);
 #endif
 
+    // 获取用户信息, 家目录、uid
 	pw = getpwnam(user);
 
 #if defined(_AIX) && defined(HAVE_SETAUTHDB)

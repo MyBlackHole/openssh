@@ -266,6 +266,7 @@ static char *listener_proctitle;
 
 /*
  * Close all listening sockets
+ * 关闭所有监听的 socket
  */
 static void
 close_listen_socks(void)
@@ -1064,6 +1065,7 @@ listen_on_addrs(struct listenaddr *la)
 		debug("Bind to port %s on %s.", strport, ntop);
 
 		/* Bind the socket to the desired port. */
+        // 绑定地址与套接字
 		if (bind(listen_sock, ai->ai_addr, ai->ai_addrlen) == -1) {
 			error("Bind to port %s on %s failed: %.200s.",
 			    strport, ntop, strerror(errno));
@@ -1074,6 +1076,7 @@ listen_on_addrs(struct listenaddr *la)
 		num_listen_socks++;
 
 		/* Start listening on the port. */
+        // 启动监听 socket
 		if (listen(listen_sock, SSH_LISTEN_BACKLOG) == -1)
 			fatal("listen on [%s]:%s: %.100s",
 			    ntop, strport, strerror(errno));
@@ -1084,6 +1087,7 @@ listen_on_addrs(struct listenaddr *la)
 	}
 }
 
+// 服务监听
 static void
 server_listen(void)
 {
@@ -1111,6 +1115,7 @@ server_listen(void)
 /*
  * The main TCP accept loop. Note that, for the non-debug case, returns
  * from this function are in a forked subprocess.
+ * 主要 TCP 连接接收循环
  */
 static void
 server_accept_loop(int *sock_in, int *sock_out, int *newsock, int *config_s)
@@ -1243,6 +1248,7 @@ server_accept_loop(int *sock_in, int *sock_out, int *newsock, int *config_s)
 			if (!(pfd[i].revents & POLLIN))
 				continue;
 			fromlen = sizeof(from);
+            // 接受新连接
 			*newsock = accept(listen_socks[i],
 			    (struct sockaddr *)&from, &fromlen);
 			if (*newsock == -1) {
@@ -1329,13 +1335,19 @@ server_accept_loop(int *sock_in, int *sock_out, int *newsock, int *config_s)
 				 * logging (since our pid has changed).
 				 * We return from this function to handle
 				 * the connection.
+                 *
+                 * 子进程
+                 *
 				 */
 				platform_post_fork_child();
 				startup_pipe = startup_p[1];
+                // 关闭所有启动的 pipe
 				close_startup_pipes();
+                // 关闭所有监听的 socket
 				close_listen_socks();
 				*sock_in = *newsock;
 				*sock_out = *newsock;
+                // 初始化日志
 				log_init(__progname,
 				    options.log_level,
 				    options.log_facility,
@@ -2047,6 +2059,7 @@ main(int ac, char **av)
 	already_daemon = daemonized();
 	if (!(debug_flag || inetd_flag || no_daemon_flag || already_daemon)) {
 
+        // 创建守护进程
 		if (daemon(0, 0) == -1)
 			fatal("daemon() failed: %.200s", strerror(errno));
 
@@ -2058,11 +2071,15 @@ main(int ac, char **av)
 	/*
 	 * Chdir to the root directory so that the current disk can be
 	 * unmounted if desired.
+     *
+     * 修改进程工作目录
+     *
 	 */
 	if (chdir("/") == -1)
 		error("chdir(\"/\"): %s", strerror(errno));
 
 	/* ignore SIGPIPE */
+    // 忽略 SIGPIPE，client 主动关闭 socket 时 server write 时会收到此信号 
 	ssh_signal(SIGPIPE, SIG_IGN);
 
 	/* Get a connection, either from inetd or a listening TCP socket */
@@ -2070,6 +2087,7 @@ main(int ac, char **av)
 		server_accept_inetd(&sock_in, &sock_out);
 	} else {
 		platform_pre_listen();
+        // 服务监听
 		server_listen();
 
 		ssh_signal(SIGHUP, sighup_handler);
@@ -2094,6 +2112,7 @@ main(int ac, char **av)
 		}
 
 		/* Accept a connection and return in a forked child */
+        // 接受连接循环
 		server_accept_loop(&sock_in, &sock_out,
 		    &newsock, config_s);
 	}
@@ -2148,6 +2167,7 @@ main(int ac, char **av)
 	}
 
 	/* Executed child processes don't need these. */
+    // 使子进程继承时自动关闭无用 socket
 	fcntl(sock_out, F_SETFD, FD_CLOEXEC);
 	fcntl(sock_in, F_SETFD, FD_CLOEXEC);
 
@@ -2193,6 +2213,9 @@ main(int ac, char **av)
 	 * The rest of the code depends on the fact that
 	 * ssh_remote_ipaddr() caches the remote ip, even if
 	 * the socket goes away.
+     *
+     * 缓存远程 ip
+     *
 	 */
 	remote_ip = ssh_remote_ipaddr(ssh);
 
@@ -2259,6 +2282,8 @@ main(int ac, char **av)
 
 	/* perform the key exchange */
 	/* authenticate user and start session */
+    // 执行密钥交换
+    // 验证用户并开始会话
 	do_ssh2_kex(ssh);
 	do_authentication2(ssh);
 
@@ -2319,6 +2344,7 @@ main(int ac, char **av)
 	notify_hostkeys(ssh);
 
 	/* Start session. */
+    // 开始会话
 	do_authenticated(ssh, authctxt);
 
 	/* The connection has been terminated. */
@@ -2381,6 +2407,7 @@ sshd_hostkey_sign(struct ssh *ssh, struct sshkey *privkey,
 }
 
 /* SSH2 key exchange */
+// 算法密钥协商
 static void
 do_ssh2_kex(struct ssh *ssh)
 {

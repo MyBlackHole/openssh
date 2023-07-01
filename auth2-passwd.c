@@ -48,6 +48,7 @@
 /* import */
 extern ServerOptions options;
 
+// 验证用户密码
 static int
 userauth_passwd(struct ssh *ssh, const char *method)
 {

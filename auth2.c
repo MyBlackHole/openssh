@@ -73,6 +73,7 @@ extern Authmethod method_hostbased;
 extern Authmethod method_gssapi;
 #endif
 
+// 全局验证方式列表
 Authmethod *authmethods[] = {
 	&method_none,
 	&method_pubkey,
@@ -165,6 +166,9 @@ done:
 
 /*
  * loop until authctxt->success == TRUE
+ *
+ * 循环到 authctxt->success == TRUE
+ *
  */
 void
 do_authentication2(struct ssh *ssh)
@@ -195,6 +199,7 @@ input_service_request(int type, u_int32_t seq, struct ssh *ssh)
 		if (!authctxt->success) {
 			acceptit = 1;
 			/* now we can handle user-auth requests */
+            // 设置新的验证方法
 			ssh_dispatch_set(ssh, SSH2_MSG_USERAUTH_REQUEST,
 			    &input_userauth_request);
 		}
@@ -208,6 +213,7 @@ input_service_request(int type, u_int32_t seq, struct ssh *ssh)
 		    (r = ssh_packet_write_wait(ssh)) != 0)
 			goto out;
 	} else {
+        // 错误的请求
 		debug("bad service request %s", service);
 		ssh_packet_disconnect(ssh, "bad service request %s", service);
 	}
@@ -280,6 +286,7 @@ input_userauth_request(int type, u_int32_t seq, struct ssh *ssh)
 		auth_maxtries_exceeded(ssh);
 	if (authctxt->attempt++ == 0) {
 		/* setup auth context */
+        // 设置授权上下文
 		authctxt->pw = PRIVSEP(getpwnamallow(ssh, user));
 		authctxt->user = xstrdup(user);
 		if (authctxt->pw && strcmp(service, "ssh-connection")==0) {
@@ -329,6 +336,7 @@ input_userauth_request(int type, u_int32_t seq, struct ssh *ssh)
 	authctxt->server_caused_failure = 0;
 
 	/* try to authenticate user */
+    // 查找验证方式
 	m = authmethod_lookup(authctxt, method);
 	if (m != NULL && authctxt->failures < options.max_authtries) {
 		debug2("input_userauth_request: try method %s", method);

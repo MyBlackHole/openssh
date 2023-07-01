@@ -479,7 +479,7 @@ ssh_packet_connection_af(struct ssh *ssh)
 }
 
 /* Sets the connection into non-blocking mode. */
-
+// 设置连接输入输出 fd 为非堵塞
 void
 ssh_packet_set_nonblocking(struct ssh *ssh)
 {
@@ -2606,7 +2606,7 @@ sshpkt_ptr(struct ssh *ssh, size_t *lenp)
 }
 
 /* start a new packet */
-
+// 开始一个新的数据包
 int
 sshpkt_start(struct ssh *ssh, u_char type)
 {

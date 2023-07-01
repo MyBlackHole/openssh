@@ -360,9 +360,11 @@ server_loop2(struct ssh *ssh, Authctxt *authctxt)
 		ssh_signal(SIGQUIT, sigterm_handler);
 	}
 
+    // 初始化调度方法
 	server_init_dispatch(ssh);
 
 	for (;;) {
+        // 处理输入数据包
 		process_buffered_input_packets(ssh);
 
 		if (!ssh_packet_is_rekeying(ssh) &&
@@ -602,15 +604,20 @@ server_request_session(struct ssh *ssh)
 	 * CHANNEL_REQUEST for a shell is made, so we set the type to
 	 * SSH_CHANNEL_LARVAL.  Additionally, a callback for handling all
 	 * CHANNEL_REQUEST messages is registered.
+     *
+     * 创建隧道
+     *
 	 */
 	c = channel_new(ssh, "session", SSH_CHANNEL_LARVAL,
 	    -1, -1, -1, /*window size*/0, CHAN_SES_PACKET_DEFAULT,
 	    0, "server-session", 1);
+    // 打开会话
 	if (session_open(the_authctxt, c->self) != 1) {
 		debug("session open failed, free channel %d", c->self);
 		channel_free(ssh, c);
 		return NULL;
 	}
+    // 注册关闭
 	channel_register_cleanup(ssh, c->self, session_close_by_channel, 0);
 	return c;
 }
@@ -883,6 +890,7 @@ server_input_channel_req(int type, u_int32_t seq, struct ssh *ssh)
 	debug("server_input_channel_req: channel %u request %s reply %d",
 	    id, rtype, want_reply);
 
+    // 通过 id 查询 隧道
 	if (id >= INT_MAX || (c = channel_lookup(ssh, (int)id)) == NULL) {
 		ssh_packet_disconnect(ssh, "%s: unknown channel %d",
 		    __func__, id);
@@ -893,6 +901,7 @@ server_input_channel_req(int type, u_int32_t seq, struct ssh *ssh)
 		chan_rcvd_eow(ssh, c);
 	} else if ((c->type == SSH_CHANNEL_LARVAL ||
 	    c->type == SSH_CHANNEL_OPEN) && strcmp(c->ctype, "session") == 0)
+        // 处理会话请求
 		success = session_input_channel_req(ssh, c, rtype);
 	if (want_reply && !(c->flags & CHAN_CLOSE_SENT)) {
 		if (!c->have_remote_id)
@@ -907,6 +916,7 @@ server_input_channel_req(int type, u_int32_t seq, struct ssh *ssh)
 	return 0;
 }
 
+// 初始化调度方法
 static void
 server_init_dispatch(struct ssh *ssh)
 {
@@ -916,9 +926,11 @@ server_init_dispatch(struct ssh *ssh)
 	ssh_dispatch_set(ssh, SSH2_MSG_CHANNEL_DATA, &channel_input_data);
 	ssh_dispatch_set(ssh, SSH2_MSG_CHANNEL_EOF, &channel_input_ieof);
 	ssh_dispatch_set(ssh, SSH2_MSG_CHANNEL_EXTENDED_DATA, &channel_input_extended_data);
+    // 隧道打开处理注册
 	ssh_dispatch_set(ssh, SSH2_MSG_CHANNEL_OPEN, &server_input_channel_open);
 	ssh_dispatch_set(ssh, SSH2_MSG_CHANNEL_OPEN_CONFIRMATION, &channel_input_open_confirmation);
 	ssh_dispatch_set(ssh, SSH2_MSG_CHANNEL_OPEN_FAILURE, &channel_input_open_failure);
+    // 隧道接收请求处理注册
 	ssh_dispatch_set(ssh, SSH2_MSG_CHANNEL_REQUEST, &server_input_channel_req);
 	ssh_dispatch_set(ssh, SSH2_MSG_CHANNEL_WINDOW_ADJUST, &channel_input_window_adjust);
 	ssh_dispatch_set(ssh, SSH2_MSG_GLOBAL_REQUEST, &server_input_global_request);

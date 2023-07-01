@@ -101,6 +101,7 @@ rtrim(char *s)
 }
 
 /* set/unset filedescriptor to non-blocking */
+// 设置 fd 为非堵塞
 int
 set_nonblock(int fd)
 {
@@ -2578,6 +2579,7 @@ opt_array_append(const char *file, const int line, const char *directive,
 	opt_array_append2(file, line, directive, array, NULL, lp, s, 0);
 }
 
+// 信号注册处理
 sshsig_t
 ssh_signal(int signum, sshsig_t handler)
 {

@@ -51,6 +51,7 @@ struct key_entry {
 
 struct ssh {
 	/* Session state */
+    // 会话状态
 	struct session_state *state;
 
 	/* Key exchange */

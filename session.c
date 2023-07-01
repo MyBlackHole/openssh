@@ -358,8 +358,10 @@ do_authenticated(struct ssh *ssh, Authctxt *authctxt)
 
 	prepare_auth_info_file(authctxt->pw, authctxt->session_info);
 
+    // 验证
 	do_authenticated2(ssh, authctxt);
 
+    // 清理
 	do_cleanup(ssh, authctxt);
 }
 
@@ -652,6 +654,9 @@ do_exec_pty(struct ssh *ssh, Session *s, const char *command)
 /*
  * This is called to fork and execute a command.  If another command is
  * to be forced, execute that instead.
+ *
+ * 分叉执行命令
+ *
  */
 int
 do_exec(struct ssh *ssh, Session *s, const char *command)
@@ -716,6 +721,7 @@ do_exec(struct ssh *ssh, Session *s, const char *command)
 	}
 #endif
 	if (s->ttyfd != -1)
+        // 在 pty 执行
 		ret = do_exec_pty(ssh, s, command);
 	else
 		ret = do_exec_no_pty(ssh, s, command);
@@ -2050,6 +2056,7 @@ session_exec_req(struct ssh *ssh, Session *s)
 	int r;
 	char *command = NULL;
 
+    // 获取命令
 	if ((r = sshpkt_get_cstring(ssh, &command, NULL)) != 0 ||
 	    (r = sshpkt_get_end(ssh)) != 0)
 		sshpkt_fatal(ssh, r, "%s: parse packet", __func__);
@@ -2223,6 +2230,7 @@ session_input_channel_req(struct ssh *ssh, Channel *c, const char *rtype)
 		if (strcmp(rtype, "shell") == 0) {
 			success = session_shell_req(ssh, s);
 		} else if (strcmp(rtype, "exec") == 0) {
+            // exec 类型的
 			success = session_exec_req(ssh, s);
 		} else if (strcmp(rtype, "pty-req") == 0) {
 			success = session_pty_req(ssh, s);

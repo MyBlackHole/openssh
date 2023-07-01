@@ -230,7 +230,7 @@ static int rdynamic_connect_finish(struct ssh *, Channel *);
 static void channel_handler_init(struct ssh_channels *sc);
 
 /* -- channel core */
-
+// 隧道初始化
 void
 channel_init_channels(struct ssh *ssh)
 {
@@ -2474,6 +2474,7 @@ channel_post_mux_listener(struct ssh *ssh, Channel *c)
 	nc->flags |= CHAN_LOCAL;
 }
 
+// 初始化隧道处理函数
 static void
 channel_handler_init(struct ssh_channels *sc)
 {
