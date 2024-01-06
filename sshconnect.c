@@ -345,6 +345,7 @@ check_ifaddrs(const char *ifname, int af, const struct ifaddrs *ifaddrs,
 
 /*
  * Creates a socket for use as the ssh connection.
+ * 创建一个套接字用作 ssh 连接。
  */
 static int
 ssh_create_socket(struct addrinfo *ai)
@@ -365,11 +366,13 @@ ssh_create_socket(struct addrinfo *ai)
 	}
 	(void)fcntl(sock, F_SETFD, FD_CLOEXEC);
 
-	/* Use interactive QOS (if specified) until authentication completed */
+	/* Use interactive QOS(服务质量) (if specified) until authentication completed */
+    // 交互式完成身份验证
 	if (options.ip_qos_interactive != INT_MAX)
 		set_sock_tos(sock, options.ip_qos_interactive);
 
 	/* Bind the socket to an alternative local IP address */
+    /* 将套接字绑定到备用本地 IP 地址 */
 	if (options.bind_address == NULL && options.bind_interface == NULL)
 		return sock;
 
@@ -414,6 +417,7 @@ ssh_create_socket(struct addrinfo *ai)
 		error_f("getnameinfo failed: %s", ssh_gai_strerror(r));
 		goto fail;
 	}
+    // 绑定地址
 	if (bind(sock, (struct sockaddr *)&bindaddr, bindaddrlen) != 0) {
 		error("bind %s: %s", ntop, strerror(errno));
 		goto fail;
@@ -485,6 +489,7 @@ ssh_connect_direct(struct ssh *ssh, const char *host, struct addrinfo *aitop,
 				host, ntop, strport);
 
 			/* Create a socket for connecting. */
+            /* 创建一个用于连接的套接字 */
 			sock = ssh_create_socket(ai);
 			if (sock < 0) {
 				/* Any error is already output */

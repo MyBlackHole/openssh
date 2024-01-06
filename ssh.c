@@ -625,6 +625,7 @@ ssh_conn_info_free(struct ssh_conn_info *cinfo)
 
 /*
  * Main program for the ssh client.
+ * ssh 客户端的主程序。
  */
 int
 main(int ac, char **av)

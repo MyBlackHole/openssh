@@ -80,7 +80,9 @@ typedef struct {
 	u_int	num_user_hostfiles;	/* Path for $HOME/.ssh/known_hosts */
 	char   *user_hostfiles[SSH_MAX_HOSTS_FILES];
 	char   *preferred_authentications;
+    /* 用于连接 sshd 的本地套接字地址 */
 	char   *bind_address;	/* local socket address for connection to sshd */
+    /* 绑定地址的本地接口 */
 	char   *bind_interface;	/* local interface for bind address */
 	char   *pkcs11_provider; /* PKCS#11 provider */
 	char   *sk_provider; /* Security key provider */
